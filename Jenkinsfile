@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         EC2_USER = 'ec2-user'
-        EC2_HOST = 'ec2-54-165-31-87.compute-1.amazonaws.com'
+        EC2_HOST = 'ec2-3.81.214.248.compute-1.amazonaws.com'
         APP_PATH = '/home/ec2-user/demo-0.0.1-SANPSHOT.jar'
         REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
     }
