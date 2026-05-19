@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL='https://github.com/rushikpatel08/Demo.git'
+        APP_PATH = '/home/ec2-user/demo-0.0.1-SNAPSHOT.jar'
+        REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
     }
 
     stages {
@@ -10,6 +11,7 @@ pipeline {
         stage('Check Environment') {
             steps {
                 sh '''
+                hostname
                 java -version
                 mvn -v
                 free -m
@@ -26,24 +28,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh '''
-                mvn clean package -DskipTests -e
-                '''
-            }
-        }
-
-        stage('Verify Jar') {
-            steps {
-                sh '''
-                ls -lh target/
-                '''
+                sh 'mvn clean package -DskipTests -e'
             }
         }
 
         stage('Deploy') {
             steps {
                 sh '''
-                cp target/*.jar /home/ec2-user/demo-0.0.1-SNAPSHOT.jar
+                cp target/*.jar ${APP_PATH}
                 sudo systemctl restart springboot || true
                 '''
             }
