@@ -8,6 +8,7 @@ import lombok.Data;
 @Table(name="mobile")
 public class Mobile {
 
+    //define table structure
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
