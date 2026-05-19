@@ -9,6 +9,14 @@ pipeline {
     }
 
     stages {
+    stage('Check Java & Maven') {
+        steps {
+            sh '''
+            java -version
+            mvn -v
+            '''
+        }
+    }
         stage('Checkout Code') {
             steps {
                 git branch: 'master', url: "${REPO_URL}"
