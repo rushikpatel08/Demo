@@ -20,6 +20,7 @@ public class mobileController {
     public List<Mobile> displaymobile()
     {
         return MobileService.getallmobile();
+
     }
 
     @PostMapping("/addmobile")
