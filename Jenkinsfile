@@ -4,7 +4,7 @@ pipeline {
     environment {
         REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
         EC2_USER = 'ec2-user'
-        EC2_HOST = '98.87.165.26'
+        EC2_HOST = '100.31.62.50'
         APP_PATH = '/home/ec2-user/app/app.jar'
     }
 
@@ -26,11 +26,14 @@ pipeline {
             steps {
                 sh '''
                 scp target/*.jar ${EC2_USER}@${EC2_HOST}:${APP_PATH}
-                ssh ${EC2_USER}@${EC2_HOST} "sudo systemctl restart springboot"
+
+                ssh ${EC2_USER}@${EC2_HOST} "
+                pkill -f app.jar || true
+                nohup java -jar ${APP_PATH} > app.log 2>&1 &
+                "
                 '''
             }
         }
-    }
 
     post {
         success {
