@@ -2,47 +2,40 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
         EC2_USER = 'ec2-user'
-        EC2_HOST = '100.31.62.50'
-        APP_PATH = '/home/ec2-user/app/app.jar'
+        EC2_HOST = 'ec2-100.31.62.50.compute-1.amazonaws.com'
+        APP_PATH = '/home/ec2-user/demo-0.0.1-SANPSHOT.jar'
+        REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
     }
 
     stages {
-
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'master', url: "${REPO_URL}"
             }
         }
 
-        stage('Build') {
+        stage('Build Spring Boot App') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'chmod +x mvnw'
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+         stage('Test Spring Boot App') {
+            steps {
+                sh './mvnw test'
             }
         }
 
         stage('Deploy to EC2') {
             steps {
-                sh '''
-                scp target/*.jar ${EC2_USER}@${EC2_HOST}:${APP_PATH}
-
-                ssh ${EC2_USER}@${EC2_HOST} "
-                pkill -f app.jar || true
-                nohup java -jar ${APP_PATH} > app.log 2>&1 &
-                "
-                '''
+                sshagent(['ec2-key-pair']) {
+                    sh "scp -o StrictHostKeyChecking=no target/demo-0.0.1-SANPSHOT.jar ${EC2_USER}@${EC2_HOST}:${APP_PATH}"
+                    sh "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'nohup java -jar ${APP_PATH} > /dev/null 2>&1 &'"
+                }
             }
         }
-    }   // ✅ THIS WAS MISSING
 
-    post {
-        success {
-            echo "Deployment Successful"
-        }
-
-        failure {
-            echo "Deployment Failed"
-        }
     }
 }
