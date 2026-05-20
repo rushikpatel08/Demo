@@ -25,12 +25,6 @@ pipeline {
             }
         }
 
-        stage('Test (Optional)') {
-            steps {
-                sh './mvnw test || true'
-            }
-        }
-
         stage('Prepare Artifact') {
             steps {
                 sh """
@@ -63,11 +57,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo "✅ Deployment Successful"
         }
-
         failure {
-            echo '❌ Pipeline failed. Check logs.'
+            echo "❌ Pipeline Failed"
         }
     }
 }
