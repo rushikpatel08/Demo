@@ -9,7 +9,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/mobile")
-@CrossOrigin(origins = "http://34.204.75.205")
+//@CrossOrigin(origins = "http://34.204.75.205")
+@CrossOrigin(origins = "*")
 public class mobileController {
 
 
