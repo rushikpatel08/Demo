@@ -2,24 +2,22 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/rushikpatel08/Demo.git'
-        REMOTE_HOST = '100.31.62.50'
-        REMOTE_USER = 'ec2-user'
         APP_NAME = 'demo-0.0.1-SNAPSHOT.jar'
-        REMOTE_PATH = '/home/ec2-user/demo-0.0.1-SNAPSHOT.jar'
+        BUILD_PATH = 'target/demo-0.0.1-SNAPSHOT.jar'
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'master', url: "${REPO_URL}"
+                git branch: 'master', url: 'https://github.com/rushikpatel08/Demo.git'
             }
         }
 
-        stage('Build Spring Boot App') {
+        stage('Build Application') {
             steps {
                 sh '''
+                echo "Cleaning and building project..."
                 mvn clean package -DskipTests
                 '''
             }
@@ -28,22 +26,41 @@ pipeline {
         stage('Verify Build') {
             steps {
                 sh '''
+                echo "Checking target folder..."
                 ls -lh target/
                 '''
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Stop Old Application') {
             steps {
                 sh '''
-                echo "Stopping existing application on remote server..."
-                ssh ${REMOTE_USER}@${REMOTE_HOST} "pkill -f ${APP_NAME} || true"
+                echo "Stopping old Spring Boot app if running..."
+                pkill -f demo-0.0.1-SNAPSHOT.jar || true
+                '''
+            }
+        }
 
-                echo "Copying JAR to remote server..."
-                scp target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}
+        stage('Deploy Application') {
+            steps {
+                sh '''
+                echo "Starting new Spring Boot application..."
 
-                echo "Starting application on remote server..."
-                ssh ${REMOTE_USER}@${REMOTE_HOST} "nohup java -jar ${REMOTE_PATH} > app.log 2>&1 &"
+                nohup java -jar target/demo-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+                echo "Application started successfully"
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                echo "Waiting for app to start..."
+                sleep 10
+
+                echo "Checking if app is running..."
+                ps -ef | grep demo-0.0.1-SNAPSHOT.jar || true
                 '''
             }
         }
@@ -51,7 +68,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment SUCCESS to EC2: ${REMOTE_HOST}"
+            echo "✅ Deployment SUCCESS on same EC2 instance"
         }
 
         failure {
